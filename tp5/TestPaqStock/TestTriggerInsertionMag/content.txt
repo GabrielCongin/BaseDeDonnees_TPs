@@ -1,0 +1,29 @@
+!|Query|select gen_clef.nextval as refMag from dual|
+|refMag?|
+|>>refMag|
+
+!|Query|select gen_clef.nextval as refSimple from dual|
+|refSimple?|
+|>>refSimple|
+
+!|execute|insert into FF_MAGASIN(m_ref,nom,ville) values(:refMag,'kiabi', 'lille')|
+
+On vérifie:
+!|Query| select count(quantite) as nb from FF_STOCK where ref_magasin=:refMag and ref_produit =:refSimple|
+|nb|
+|0|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:refSimple,'le prod',1.5,'petit')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:refSimple,'salade')|
+
+On vérifie:
+!|Query| select quantite from FF_STOCK where ref_magasin=:refMag and ref_produit =:refSimple|
+|quantite|
+|0|
+
+On vérifie:
+!|Query| select count(quantite) as nb from FF_STOCK where ref_magasin=:refMag and ref_produit =:refSimple|
+|nb|
+|1|
+
+

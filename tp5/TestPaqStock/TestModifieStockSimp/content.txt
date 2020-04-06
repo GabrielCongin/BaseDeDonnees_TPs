@@ -1,0 +1,72 @@
+!1 Différents tests de la procédure PAQ_STOCK.modifie_stock_simple
+
+!3 Déclenche PARAMETRE_INDEFINI (-20102) si l'un des paramètres vaut NULL
+!|Execute procedure expect exception|PAQ_STOCK.modifie_stock_simple|20102|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|null|5|1|
+
+!|Execute procedure expect exception|PAQ_STOCK.modifie_stock_simple|20102|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|1|null|1|
+
+!|Execute procedure expect exception|PAQ_STOCK.modifie_stock_simple|20102|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|1|5|null|
+
+!|Query|select gen_clef.nextval as refSimple from dual|
+|refSimple?|
+|>>refSimple|
+
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:refSimple,'le prod',1.5,'petit')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:refSimple,'salade')|
+
+!|Query|select gen_clef.nextval as refMag from dual|
+|refMag?|
+|>>refMag|
+
+!|execute|insert into FF_MAGASIN(m_ref,nom,ville) values(:refMag,'kiabi', 'lille')|
+
+!|Query|select max(p_ref)+1 as new from FF_PRODUIT|
+|new?|
+|>>new|
+
+!3 Déclenche PRODUIT_INCONNU (-20103) si le produit n'est pas correct
+!|Execute procedure expect exception|PAQ_STOCK.modifie_stock_simple|20103|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<new|2|<<refMag|
+
+!|Query|select max(m_ref)+1 as new2 from FF_MAGASIN|
+|new2?|
+|>>new2|
+
+!3 Déclenche MAGASIN_INCONNU (-20110) si le magasin n'est pas correct
+!|Execute procedure expect exception|PAQ_STOCK.modifie_stock_simple|20110|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<refSimple|2|<<new2|
+
+!3 On teste dans le cas où il n'y a pas d'erreur dans les valeurs des paramètres
+
+On teste pour valeur positive
+!|Execute procedure|PAQ_STOCK.modifie_stock_simple|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<refSimple|10|<<refMag|
+
+On teste pour valeur negative
+!|Execute procedure|PAQ_STOCK.modifie_stock_simple|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<refSimple|-5|<<refMag|
+
+On teste pour valeur égal à 0
+!|Execute procedure|PAQ_STOCK.modifie_stock_simple|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<refSimple|0|<<refMag
+
+On vérifie:
+!|Query| select * from FF_STOCK where ref_produit=:refSimple and ref_magasin=:refMag|
+|ref_produit|quantite|ref_magasin|
+|<<refSimple|5|<<refMag|
+
+!3 Déclenche PB_STOCK (-20120) si on retire plus de produit qu'il y en a
+!|Execute procedure expect exception|PAQ_STOCK.modifie_stock_simple|20120|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<refSimple|-10|<<refMag|

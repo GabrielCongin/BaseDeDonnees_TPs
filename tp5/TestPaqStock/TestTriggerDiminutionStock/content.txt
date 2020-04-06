@@ -1,0 +1,30 @@
+!|Query|select gen_clef.nextval as refSimple from dual|
+|refSimple?|
+|>>refSimple|
+
+!|Query|select gen_clef.nextval as refMag from dual|
+|refMag?|
+|>>refMag|
+
+!|execute|insert into FF_MAGASIN(m_ref,nom,ville) values(:refMag,'kiabi', 'lille')|
+!|execute|insert into FF_PRODUIT(p_ref,nom,prix,taille) values (:refSimple,'le prod',1.5,'petit')|
+!|execute|insert into FF_SIMPLE(s_ref,categ) values(:refSimple,'salade')|
+
+!|Execute procedure|PAQ_STOCK.modifie_stock_simple|
+|la_ref_produit|la_quantite|la_ref_magasin|
+|<<refSimple|15|<<refMag|
+
+!|execute|insert into FF_CONSOMMATION(estampille,ref_produit,ref_magasin) values (sysdate,:refSimple,:refMag)|
+
+
+On vérifie:
+!|Query| select * from FF_STOCK where ref_produit=:refSimple and ref_magasin=:refMag|
+|ref_produit|quantite|ref_magasin|
+|<<refSimple|14|<<refMag|
+
+!|execute|insert into FF_CONSOMMATION(estampille,ref_produit,ref_magasin) values (sysdate,:refSimple,:refMag)|
+
+On vérifie:
+!|Query| select * from FF_STOCK where ref_produit=:refSimple and ref_magasin=:refMag|
+|ref_produit|quantite|ref_magasin|
+|<<refSimple|13|<<refMag|
